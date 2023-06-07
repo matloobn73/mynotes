@@ -32,6 +32,7 @@ class HomePage extends StatelessWidget {
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
+
               // final user = FirebaseAuth.instance.currentUser;
               // if (user?.emailVerified ?? false) {
               //   return Text("Done");
