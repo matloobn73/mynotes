@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer' as devtool show log;
 
 import '../firebase_options.dart';
 
@@ -33,7 +34,9 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login"),),
+      appBar: AppBar(
+        title: Text("Login"),
+      ),
       body: Column(
         children: [
           TextField(
@@ -49,31 +52,37 @@ class _LoginViewState extends State<LoginView> {
               obscureText: true,
               enableSuggestions: false,
               autocorrect: false,
-              decoration: const InputDecoration(hintText: "Enter your password")),
+              decoration:
+                  const InputDecoration(hintText: "Enter your password")),
           TextButton(
             onPressed: () async {
               final email = _email.text;
               final password = _password.text;
               try {
-                final userCredentials = await FirebaseAuth.instance
-                    .signInWithEmailAndPassword(email: email, password: password);
-                print(userCredentials);
+                await FirebaseAuth.instance.signInWithEmailAndPassword(
+                    email: email, password: password);
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/notes/', (route) => false);
               } on FirebaseAuthException catch (e) {
-                if (e.code == 'user-not-found')
-                  print("This user doesn't exist!");
-                else if (e.code == 'wrong-password')
-                  print("Wrong Passowrd!");
-                else
-                  print(e.code);
+                if (e.code == 'user-not-found') {
+                  devtool.log("This user doesn't exist");
+                } else if (e.code == 'wrong-password') {
+                  devtool.log('Wrong Password');
+                } else {
+                  devtool.log(e.code.toString());
+                }
               } catch (e) {
-                print("${e.runtimeType} - There was an error!");
+                devtool.log("${e.runtimeType} - There was an error!");
               }
             },
             child: const Text("Login"),
           ),
-          TextButton(onPressed: (){
-            Navigator.of(context).pushNamedAndRemoveUntil('/register/', (route) => false);
-          }, child: Text("Not registered yet? Register here!"))
+          TextButton(
+              onPressed: () {
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/register/', (route) => false);
+              },
+              child: const Text("Not registered yet? Register here!"))
         ],
       ),
     );

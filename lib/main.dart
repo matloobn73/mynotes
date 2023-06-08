@@ -5,7 +5,6 @@ import 'package:mynotes/view/login_view.dart';
 import 'package:mynotes/view/register_view.dart';
 import 'package:mynotes/view/verify_email_view.dart';
 import 'dart:developer' as devtools show log;
-
 import 'firebase_options.dart';
 
 void main() {
@@ -19,7 +18,8 @@ void main() {
       routes: {
         '/login/': (context) => const LoginView(),
         '/register/': (context) => const RegisterView(),
-      }));
+        '/notes/' : (context) => const NotesView()
+       }));
 }
 
 class HomePage extends StatelessWidget {
@@ -94,7 +94,6 @@ class NotesView extends StatelessWidget {
     );
   }
 }
-
 Future<bool> showLogoutDialog(BuildContext context) {
   return showDialog<bool>(
       context: context,
