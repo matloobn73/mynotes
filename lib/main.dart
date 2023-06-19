@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/view/login_view.dart';
+import 'package:mynotes/view/notes_view.dart';
 import 'package:mynotes/view/register_view.dart';
 import 'package:mynotes/view/verify_email_view.dart';
 import 'dart:developer' as devtools show log;
@@ -19,8 +20,9 @@ void main() {
       routes: {
         loginRoute: (context) => const LoginView(),
         registerRoute: (context) => const RegisterView(),
-        notesRoute : (context) => const NotesView()
-       }));
+        notesRoute: (context) => const NotesView(),
+        verifyEmail: (context) => const VerifyEmailView(),
+      }));
 }
 
 class HomePage extends StatelessWidget {
@@ -42,7 +44,9 @@ class HomePage extends StatelessWidget {
                 } else {
                   return const NotesView();
                 }
-              } else {}
+              } else {
+                return const LoginView();
+              }
               // if (user?.emailVerified ?? false) {
               //   return Text("Done");
               // } else {
@@ -56,62 +60,29 @@ class HomePage extends StatelessWidget {
   }
 }
 
+/* Menu Action Items */
 enum MenuAction { logout }
 
-class NotesView extends StatelessWidget {
-  const NotesView({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("My Notes"),
-        actions: [
-          PopupMenuButton(
-              itemBuilder: (context) {
-            return [
-              const PopupMenuItem<MenuAction>(
-                value: MenuAction.logout,
-                child: Text("Log Out"),
-              )
-            ];
-          },
-              onSelected: (value) async {
-            switch (value){
-              case MenuAction.logout:
-                final shouldLogout = await showLogoutDialog(context);
-                if(shouldLogout){
-                  await FirebaseAuth.instance.signOut();
-                  Navigator.of(context).pushNamedAndRemoveUntil(loginRoute, (_) => false);
-                }
-                devtools.log("${shouldLogout.toString()} - Should Log Out!");
-                break;
-            }
-            devtools.log("${value.toString()} - is the selected item!");
-          }),
-        ],
-      ),
-      body: const Text("hello notes"),
-    );
-  }
-}
+/* Show Logout Dialog */
 Future<bool> showLogoutDialog(BuildContext context) {
   return showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Sign Out?'),
-          content: Text('Are you sure you want to sign out?'),
+          title: const Text('Sign Out?'),
+          content: const Text('Are you sure you want to sign out?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
-            TextButton(onPressed: () {
-              Navigator.of(context).pop(true);
-            }, child: Text('Sign Out'))
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                child: const Text('Sign Out'))
           ],
         );
       }).then((value) => value ?? false);

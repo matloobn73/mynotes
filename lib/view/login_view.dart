@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:developer' as devtool show log;
-
 import 'package:mynotes/constants/routes.dart';
+import '../main.dart';
+import '../utilities/show_error_dialog.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -34,7 +34,7 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Login"),
+        title: const Text("Login"),
       ),
       body: Column(
         children: [
@@ -58,20 +58,34 @@ class _LoginViewState extends State<LoginView> {
               final email = _email.text;
               final password = _password.text;
               try {
-                await FirebaseAuth.instance.signInWithEmailAndPassword(
-                    email: email, password: password);
-                Navigator.of(context)
-                    .pushNamedAndRemoveUntil(notesRoute, (route) => false);
+                await FirebaseAuth.instance
+                    .signInWithEmailAndPassword(
+                        email: email, password: password)
+                    .then((value) => Navigator.of(context)
+                        .pushNamedAndRemoveUntil(notesRoute, (route) => false));
               } on FirebaseAuthException catch (e) {
                 if (e.code == 'user-not-found') {
-                  devtool.log("This user doesn't exist");
+                  await showErrorDialog(
+                    context,
+                    "This user doesn't exist!",
+                  );
                 } else if (e.code == 'wrong-password') {
-                  devtool.log('Wrong Password');
+                  await showErrorDialog(
+                    context,
+                    "Wrong Password!",
+                  );
+                }else if (e.code == ''){
                 } else {
-                  devtool.log(e.code.toString());
+                  await showErrorDialog(
+                    context,
+                    "Error ${e.code.toString()}",
+                  );
                 }
               } catch (e) {
-                devtool.log("${e.runtimeType} - There was an error!");
+                await showErrorDialog(
+                  context,
+                  "Error ${e.runtimeType.toString()}",
+                );
               }
             },
             child: const Text("Login"),
