@@ -5,6 +5,8 @@ import 'package:mynotes/services/auth/auth_provide.dart';
 import 'package:firebase_auth/firebase_auth.dart'
     show FirebaseAuth, FirebaseAuthException;
 
+import '../../firebase_options.dart';
+
 class FirebaseAuthProvider implements AuthProvider {
   @override
   Future<AuthUser> createUser({
@@ -77,9 +79,9 @@ class FirebaseAuthProvider implements AuthProvider {
   @override
   Future<void> logOut() async {
     final user = FirebaseAuth.instance.currentUser;
-    if(user!=null){
+    if (user != null) {
       await FirebaseAuth.instance.signOut();
-    }else{
+    } else {
       throw UserNotLoggedInAuthException();
     }
   }
@@ -92,5 +94,11 @@ class FirebaseAuthProvider implements AuthProvider {
     } else {
       throw UserNotLoggedInAuthException();
     }
+  }
+
+  @override
+  Future<void> initialize() async {
+    Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,);
   }
 }

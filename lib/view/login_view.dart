@@ -1,8 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
-import '../main.dart';
+import 'package:mynotes/services/auth/auth_service.dart';
+import '../services/auth/auth_exceptions.dart';
 import '../utilities/show_error_dialog.dart';
 
 class LoginView extends StatefulWidget {
@@ -16,6 +15,8 @@ class _LoginViewState extends State<LoginView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
 
+  late bool isVisible = true;
+
   @override
   void initState() {
     _email = TextEditingController();
@@ -28,6 +29,12 @@ class _LoginViewState extends State<LoginView> {
     _email.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  void isVisibleButton() {
+    setState(() {
+      isVisible = !isVisible;
+    });
   }
 
   @override
@@ -48,50 +55,49 @@ class _LoginViewState extends State<LoginView> {
           ),
           TextField(
               controller: _password,
-              obscureText: true,
+              obscureText: isVisible,
               enableSuggestions: false,
               autocorrect: false,
-              decoration:
-                  const InputDecoration(hintText: "Enter your password")),
+              decoration: InputDecoration(
+                  hintText: "Enter your password",
+                  suffixIcon: IconButton(
+                      onPressed: () {
+                        isVisibleButton();
+                      },
+                      icon: isVisible
+                          ? Icon(Icons.visibility_off)
+                          : Icon(Icons.visibility)))),
           TextButton(
             onPressed: () async {
               final email = _email.text;
               final password = _password.text;
               try {
-                await FirebaseAuth.instance
-                    .signInWithEmailAndPassword(
-                        email: email, password: password)
+                await AuthService.firebase()
+                    .logIn(email: email, password: password)
                     .then((value) {
-                  var user = FirebaseAuth.instance.currentUser;
-                  if (user?.emailVerified ?? false) {
+                  var user = AuthService.firebase().currentUser;
+                  if (user?.isEmailVerified ?? false) {
                     Navigator.of(context)
                         .pushNamedAndRemoveUntil(notesRoute, (route) => false);
-                  }else{
+                  } else {
                     //User Not Verified
                     Navigator.of(context).pushNamed(verifyEmail);
                   }
                 });
-              } on FirebaseAuthException catch (e) {
-                if (e.code == 'user-not-found') {
-                  await showErrorDialog(
-                    context,
-                    "This user doesn't exist!",
-                  );
-                } else if (e.code == 'wrong-password') {
-                  await showErrorDialog(
-                    context,
-                    "Wrong Password!",
-                  );
-                } else {
-                  await showErrorDialog(
-                    context,
-                    "Error ${e.code.toString()}",
-                  );
-                }
-              } catch (e) {
+              } on UserNotFoundAuthException catch (e) {
                 await showErrorDialog(
                   context,
-                  "Error ${e.runtimeType.toString()}",
+                  "This user doesn't exist!",
+                );
+              } on WrongPasswordAuthException catch (e) {
+                await showErrorDialog(
+                  context,
+                  "Wrong Password!",
+                );
+              } on GenericAuthException{
+                await showErrorDialog(
+                  context,
+                  "Authentication Error",
                 );
               }
             },
